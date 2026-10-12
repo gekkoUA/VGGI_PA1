@@ -25,16 +25,13 @@ function Model(name) {
     }
 }
 
-// Функція генерує всі 6 "шапок" для формування повного вузла Неовіуса
 function CreateNeoviusSurfaceData() {
     let polylines = [];
     
-    // Крок сітки (можеш зменшити знаменник, наприклад до 15, якщо трохи лагає)
     const step = Math.PI / 20; 
     const min = -Math.PI / 2;
     const max = Math.PI / 2;
 
-    // 1. Прохід по U-лініях (v = константа)
     for (let v = min; v <= max; v += step) {
         let zLinesPos = [], zLinesNeg = [];
         let xLinesPos = [], xLinesNeg = [];
@@ -43,17 +40,14 @@ function CreateNeoviusSurfaceData() {
         for (let u = min; u <= max; u += step) {
             let arg = calculateArgument(u, v);
             if (arg !== null) {
-                let w = Math.acos(arg); // w - це наше згенероване значення (arccos)
+                let w = Math.acos(arg);
 
-                // Шапки по осі Z (x=u, y=v, z=w)
                 zLinesPos.push(u, v, w);
                 zLinesNeg.push(u, v, -w);
 
-                // Шапки по осі X (x=w, y=u, z=v)
                 xLinesPos.push(w, u, v);
                 xLinesNeg.push(-w, u, v);
 
-                // Шапки по осі Y (x=v, y=w, z=u)
                 yLinesPos.push(v, w, u);
                 yLinesNeg.push(v, -w, u);
             }
@@ -61,7 +55,6 @@ function CreateNeoviusSurfaceData() {
         polylines.push(zLinesPos, zLinesNeg, xLinesPos, xLinesNeg, yLinesPos, yLinesNeg);
     }
 
-    // 2. Прохід по V-лініях (u = константа)
     for (let u = min; u <= max; u += step) {
         let zLinesPos = [], zLinesNeg = [];
         let xLinesPos = [], xLinesNeg = [];
@@ -88,7 +81,6 @@ function CreateNeoviusSurfaceData() {
     return polylines;
 }
 
-// Функція для обчислення аргументу arccos за формулою
 function calculateArgument(u, v) {
     let cosU = Math.cos(u);
     let cosV = Math.cos(v);

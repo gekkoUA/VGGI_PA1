@@ -1,20 +1,18 @@
 'use strict';
 
-let gl;                         // WebGL контекст
-let surface;                    // Наша поверхня Неовіуса
-let shProgram;                  // Шейдерна програма
-let spaceball;                  // Об'єкт для обертання мишкою
+let gl;
+let surface;
+let shProgram;
+let spaceball;
 
 function deg2rad(angle) {
     return angle * Math.PI / 180;
 }
 
-// Конструктор шейдерної програми
 function ShaderProgram(name, program) {
     this.name = name;
     this.prog = program;
 
-    // Локації атрибутів та юніформ-змінних
     this.iAttribVertex = -1;
     this.iModelViewProjectionMatrix = -1;
     this.iColor = -1;
@@ -24,35 +22,24 @@ function ShaderProgram(name, program) {
     }
 }
 
-// Головна функція малювання (викликається постійно при обертанні)
 function draw() { 
     gl.clearColor(0, 0, 0, 1);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     
-    // Налаштування матриці проєкції (Perspective)
     let projection = m4.perspective(Math.PI / 8, 1, 1, 50);
-    
-    // Отримання матриці виду (View) від об'єкта обертання Trackball
     let modelView = spaceball.getViewMatrix();
-
     let rotateToPointZero = m4.axisRotation([0.707, 0.707, 0], 0.7);
     let translateToPointZero = m4.translation(0, 0, -20);
-
     let matAccum0 = m4.multiply(rotateToPointZero, modelView);
     let matAccum1 = m4.multiply(translateToPointZero, matAccum0);
-        
     let modelViewProjection = m4.multiply(projection, matAccum1);
 
     gl.uniformMatrix4fv(shProgram.iModelViewProjectionMatrix, false, modelViewProjection);
-    
-    // Задаємо колір ліній (зелений: R=0, G=1, B=0, Alpha=1)
     gl.uniform4fv(shProgram.iColor, [0.0, 1.0, 0.0, 1.0]);
 
-    // Виклик методу Draw нашої поверхні
     surface.Draw();
 }
 
-// Функція створення та компіляції шейдерної програми
 function createProgram(gl, vShader, fShader) {
     let vsh = gl.createShader(gl.VERTEX_SHADER);
     gl.shaderSource(vsh, vShader);
@@ -78,7 +65,6 @@ function createProgram(gl, vShader, fShader) {
     return prog;
 }
 
-// Функція ініціалізації (викликається при завантаженні сторінки)
 function init() {
     let canvas;
     try {
@@ -95,8 +81,6 @@ function init() {
     }
 
     try {
-        // Змінні vertexShaderSource та fragmentShaderSource автоматично беруться 
-        // з підключеного файлу shader.gpu
         let prog = createProgram(gl, vertexShaderSource, fragmentShaderSource);
         shProgram = new ShaderProgram('Basic', prog);
         shProgram.Use();
@@ -105,10 +89,8 @@ function init() {
         shProgram.iModelViewProjectionMatrix = gl.getUniformLocation(prog, "ModelViewProjectionMatrix");
         shProgram.iColor                     = gl.getUniformLocation(prog, "color");
 
-        // СТВОРЕННЯ ОБ'ЄКТА ПОВЕРХНІ НЕОВІУСА (з neovius.js)
         surface = new Model("Neovius Surface");
         
-        // Генеруємо дані поліліній і передаємо в буфери
         surface.BufferData(CreateNeoviusSurfaceData());
 
         gl.enable(gl.DEPTH_TEST);
@@ -119,9 +101,6 @@ function init() {
         return;
     }
 
-    // Ініціалізація управління мишкою
     spaceball = new TrackballRotator(canvas, draw, 0);
-
-    // Перший виклик малювання
     draw();
 }
